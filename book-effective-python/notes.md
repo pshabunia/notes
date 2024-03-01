@@ -13,6 +13,7 @@ Concepts:
 * Variadic functions
 * Dunder = **d**ouble **under**score
 * Rule of the least surprise
+* Fan-out, Fan-in
 
 Reader's notes:
 * `(see Item X: ...)` occurs 266 times on 182 pages. References could be shorter.
