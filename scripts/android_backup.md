@@ -9,11 +9,12 @@ Enable debug mode on device: https://developer.android.com/studio/debug/dev-opti
 adb start-server
 # connect the phone
 # confirm debug connection on the phone if asked
+# connect to specific device-id if connected to multiple phones, otherwise just skip to `pull` section
 adb devices
 adb attach <device-id>
 # cd target_directory 
 # move a single file or entire directory
 adb pull /sdcard/DCIM/Camera/ .
-# move specific files
+# move specific files, e.g. photos by year/month
 adb shell 'find /sdcard/DCIM/Camera -name "2023*" -print0' | xargs -0 -n 1 adb pull
 ```
