@@ -12,5 +12,8 @@ adb start-server
 adb devices
 adb attach <device-id>
 # cd target_directory 
+# move a single file or entire directory
+adb pull /sdcard/DCIM/Camera/ .
+# move specific files
 adb shell 'find /sdcard/DCIM/Camera -name "2023*" -print0' | xargs -0 -n 1 adb pull
 ```
