@@ -1,7 +1,7 @@
 # Chapter 6. Concurrency and Parallelism
 
 * Concurrency: tasks > executors. Tasks interleaved and interrupted.
-* Parallelism: 1 < tasks <= executors. Tasks independent and simultaneous.
+* Parallelism: 1 < tasks <= executors. Tasks isolated and simultaneous.
 
 ## Item 52: Use `subprocess` to Manage Child Processes
 
@@ -135,6 +135,8 @@ it also limits I/O parallelism by requiring max_workers to be specified upfront.
 
 # Item 60: Achieve Highly Concurrent I/O with Coroutines
 
+https://docs.python.org/3/library/asyncio.html
+
 All previously discussed approaches fall short in their ability to handle thousands of simultaneously concurrent
 functions. Python addresses the need for highly concurrent I/O with coroutines. Coroutines let you have a very large 
 number of seemingly simultaneous functions in your Python programs. They're implemented using the `async` and `await`
@@ -186,3 +188,73 @@ A caller can receive the result of a dependent coroutine by using the `await` ke
 while also overcoming all the problems associated with doing I/O in threads.
 
 # Item 61: Know How to Port Threaded I/O to `asyncio`
+
+* Python provides asynchronous versions of for loops, with statements, generators, comprehensions, 
+and library helper functions that can be used as drop-in replacements in coroutines.
+* The asyncio built-in module makes it straightforward to port existing code 
+that uses threads and blocking I/O over to coroutines and asynchronous I/O.
+
+# Item 62: Mix Threads and Coroutines to Ease the Transition to `asyncio`
+
+> In order to do that, your codebase needs to be able to use threads
+for blocking I/O (Item 53) and coroutines for asynchronous I/O (Item 60)
+at the same time in a way that's mutually compatible. 
+dIn other words, you need threads to be able to run coroutines, 
+and you need coroutines to be able to start and wait on threads.
+ 
+Top-down approach:
+1. Change a top function to use `async def` instead of `def`.
+2. Wrap all of its calls that do potentially blocking I/O to use `asyncio.run_in_executor` instead.
+3. Ensure that the resources or callbacks used by `run_in_executor` invocations are properly synchronized 
+(i.e., using `Lock` or the `asyncio.run_coroutine_threadsafe` function).
+4. Try to eliminate `get_event_loop` and `run_in_executor` calls by moving downward through the call hierarchy 
+and converting intermediate functions and methods to coroutines (following the first three steps).
+
+(!!) beware thread allocation and even loop controls with `run_coroutine_threadsafe` and `run_in_executor`
+
+Bottom-up approach:
+1. Create a new asynchronous coroutine version of each leaf function that you're trying to port.
+2. Change the existing synchronous functions so they call the coroutine versions and run the event loop 
+instead of implementing any real behavior.
+3. Move up a level of the call hierarchy, make another layer of coroutines, and replace existing calls 
+to synchronous functions with calls to the coroutines defined in step 1.
+4. Delete synchronous wrappers around coroutines created in step 2 as you stop requiring them 
+to glue the pieces together.
+
+Summary:
+* The awaitable `run_in_executor` method of the asyncio event
+loop enables coroutines to run synchronous functions in
+`ThreadPoolExecutor` pools. This facilitates top-down migrations to asyncio.
+* The `run_until_complete` method of the asyncio event loop enables
+synchronous code to run a coroutine until it finishes. The
+`asyncio.run_coroutine_threadsafe` function provides the same
+functionality across thread boundaries. Together these help with
+bottom-up migrations to asyncio.
+
+# Item 63: Avoid Blocking the asyncio Event Loop to Maximize Responsiveness
+
+* Making system calls in coroutines—including blocking I/O and
+starting threads—can reduce program responsiveness and increase
+the perception of latency.
+* Pass the `debug=True` parameter to `asyncio.run` in order to detect
+when certain coroutines are preventing the event loop from reacting
+quickly.
+
+# Item 64: Consider `concurrent.futures` for True Parallelism
+
+References:
+* https://docs.python.org/3/library/concurrent.futures.html#processpoolexecutor
+* https://docs.python.org/3/library/multiprocessing.html
+* https://swig.org/
+* https://github.com/google/clif
+
+Notes:
+* Moving CPU bottlenecks to C-extension modules can be an effective
+way to improve performance while maximizing your investment in
+Python code. However, doing so has a high cost and may introduce
+bugs.
+* The multiprocessing module provides powerful tools that can parallelize 
+certain types of Python computation with minimal effort.
+* The power of multiprocessing is best accessed through the
+`concurrent.futures` built-in module and its simple `ProcessPoolExecutor` class.
+* Avoid the advanced (and complicated) parts of the `multiprocessing` module until you’ve exhausted all other options.
