@@ -2,6 +2,7 @@
 
 ## Setup 
 Install Android Debug Bridge (adb): https://developer.android.com/tools/adb
+
 Enable debug mode on device: https://developer.android.com/studio/debug/dev-options#enable
 
 ## Export data
