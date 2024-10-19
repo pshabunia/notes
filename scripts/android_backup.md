@@ -1,7 +1,9 @@
 # Android Data Backup
 
 ## Setup 
-Install Android Debug Bridge (adb): https://developer.android.com/tools/adb
+Install Android Debug Bridge (adb): https://developer.android.com/tools/releases/platform-tools
+* Also MacPorts: https://ports.macports.org/port/android-platform-tools
+* Also Homebrew: https://formulae.brew.sh/cask/android-platform-tools
 
 Enable debug mode on device: https://developer.android.com/studio/debug/dev-options#enable
 
